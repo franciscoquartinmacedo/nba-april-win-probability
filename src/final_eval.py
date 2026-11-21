@@ -109,7 +109,6 @@ if __name__ == "__main__":
         dev = D.load_development()
         inputs = compute_inputs(dev)
         # causality check: inputs on dev must equal inputs computed with March appended, for every dev row
-        ctx_marker = "skipped (March not loaded in dry mode)"
         tes, Ps = [], {m: [] for m in FROZEN["models"]}
         for start, end in [("2025-12-01", "2026-01-01"), ("2026-01-01", "2026-02-01"), ("2026-02-01", "2026-03-01")]:
             te, P = predict_period(dev, inputs, pd.Timestamp(start), pd.Timestamp(end)); tes.append(te)
@@ -117,6 +116,10 @@ if __name__ == "__main__":
         te_all = np.concatenate(tes); P_all = {m: np.concatenate(v) for m, v in Ps.items()}
         summarise_models(dev, te_all, P_all, "DRY RUN Dec-Feb (pseudo-test months)")
         print("\nEXPECTED from earlier validation: constant 0.6937, log5 0.6574, ridge_rating 0.6419, elo 0.6416")
+        for m, v in (("constant", 0.6937), ("log5", 0.6574), ("ridge_rating", 0.6419), ("elo_rating", 0.6416)):
+            got = M.log_loss(dev.loc[te_all, "home_win"].to_numpy(), P_all[m])
+            assert abs(got - v) < 5e-5, f"dry run does not reproduce validation: {m} {got:.4f} vs {v}"
+        print("dry-run check passed: validation numbers reproduced")
 
     elif mode == "march":
         ctx = D.load_final_test_context()                          # Oct-Mar, no April

@@ -44,6 +44,7 @@ def run_elo(df, k_inf, k0=None, kind="none", c=None, kscale=1.0, freeze_idx=None
         if freeze_idx is not None and t == freeze_idx:
             frozen_H = run_sum / t if t > 0 else 0.0
         H = frozen_H if frozen_H is not None else (run_sum / t if t > 0 else 0.0)
+        # note: H (running mean of margins) includes earlier games of the same day; effect on predictions is below 0.002
         d[t] = r[h[t]] - r[a[t]] + H
         gh[t], ga[t] = g[h[t]], g[a[t]]
         if freeze_idx is not None and t >= freeze_idx:

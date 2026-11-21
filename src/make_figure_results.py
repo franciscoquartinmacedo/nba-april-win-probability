@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 SURFACE, INK, INK2, MUTED, GRID, BASE = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 C = {"ridge_rating": "#2a78d6", "log5": "#eb6834", "elo_rating": "#1baf7a", "constant": MUTED}
-NAME = {"ridge_rating": "ridge", "log5": "log5", "elo_rating": "Elo", "constant": "always home"}
+NAME = {"ridge_rating": "ridge", "log5": "log5", "elo_rating": "Elo", "constant": "constant home rate"}
 ll = pd.read_csv("../outputs/pooled_logloss.csv").set_index("model"); g = pd.read_csv("../outputs/pooled_paired_gains.csv")
 plt.rcParams.update({"font.family": "DejaVu Sans", "text.color": INK, "axes.labelcolor": INK2, "xtick.color": MUTED, "ytick.color": MUTED})
 fig, (a, b) = plt.subplots(1, 2, figsize=(14.2, 5.6), dpi=150, facecolor=SURFACE, gridspec_kw={"width_ratios": [1.15, 1]})
@@ -30,11 +30,11 @@ for m in ("constant", "log5", "elo_rating", "ridge_rating"):
 a.axvline(2.7, color=BASE, lw=1, ls=(0, (3, 3)))
 a.set_xticks(xs); a.set_xticklabels([f"{p.replace('Dec-Feb','Dec–Feb').replace('pooled','Pooled')}\nn={k}" for p, k in zip(periods, n)], fontsize=9.2)
 a.set_xlim(-0.35, 5.0); a.set_ylim(0.44, 0.72); a.set_ylabel("Log loss (lower is better)", fontsize=9.5)
-a.set_title("Team-strength models clearly beat always-home; the gap to log5 is small", loc="left", fontsize=11.5, fontweight="bold", color=INK, pad=24)
+a.set_title("Team-strength models clearly beat the constant home rate; the gap to log5 is small", loc="left", fontsize=11.5, fontweight="bold", color=INK, pad=24)
 a.text(0, 1.03, "Out-of-sample log loss; Dec–Feb = three validation folds, March = final test, April = blind test (version A)", transform=a.transAxes, fontsize=8.2, color=INK2)
 
 # ---- B: ridge advantage over each alternative (positive = ridge better)
-alts = [("constant", "always home"), ("log5", "log5"), ("log5_recalibrated", "log5, recalibrated"), ("ridge_b2b", "ridge + back-to-back"), ("ridge_all", "ridge + all features"), ("elo_rating", "Elo")]
+alts = [("constant", "constant home rate"), ("log5", "log5"), ("log5_recalibrated", "log5, recalibrated"), ("ridge_b2b", "ridge + back-to-back"), ("ridge_all", "ridge + all features"), ("elo_rating", "Elo")]
 def adv(alt, per):
     r = g[(g["from"] == alt) & (g["to"] == "ridge_rating") & (g.period == per)]
     if len(r): r = r.iloc[0]; return r.gain, r.naive_lo, r.naive_hi

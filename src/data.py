@@ -2,9 +2,11 @@
 
 Design rule: April (blind test) and March (final test) are LOCKED by default.
 Model selection code can only reach Oct-Feb through `load_development()`.
-Locked months are only reachable through explicitly named functions that the
-final evaluation script calls once, after everything is frozen.
+Locked months are only reachable through explicitly named functions, and those
+raise unless the environment variable NBA_FINAL_EVAL=1 is set. run_all.sh sets it
+only for the final scoring and reporting steps, never for the tuning steps.
 """
+import os
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +19,12 @@ APRIL_START = pd.Timestamp("2026-04-01")        # April: blind, scored once
 
 # Rolling-origin validation: each month is predicted using only earlier games.
 VALIDATION_MONTHS = ["2025-12", "2026-01", "2026-02"]
+
+
+def _require_final(name: str) -> None:
+    if os.environ.get("NBA_FINAL_EVAL") != "1":
+        raise PermissionError(f"{name}() reaches March/April, which are locked. Set NBA_FINAL_EVAL=1 "
+                              "(run_all.sh does this for the final scoring steps only).")
 
 
 def _read() -> pd.DataFrame:
@@ -33,16 +41,19 @@ def load_development() -> pd.DataFrame:
 
 
 def load_final_test_march() -> pd.DataFrame:  # called once, by the final script
+    _require_final("load_final_test_march")
     df = _read()
     return df[(df["game_date"] >= FINAL_TEST_START) & (df["game_date"] < APRIL_START)].reset_index(drop=True)
 
 
 def load_final_test_context() -> pd.DataFrame:  # Oct-Mar: development + March, no April. Called by the March evaluation only.
+    _require_final("load_final_test_context")
     df = _read()
     return df[df["game_date"] < APRIL_START].reset_index(drop=True)
 
 
 def load_all_for_final_evaluation() -> pd.DataFrame:  # called once, by the final script
+    _require_final("load_all_for_final_evaluation")
     return _read()
 
 

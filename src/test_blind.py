@@ -19,3 +19,6 @@ a0, a1 = pack(ctx, True), pack(perturb(ctx), True)
 print("A ridge/elo/features/records unchanged:", np.allclose(a0[0],a1[0]), np.allclose(a0[1],a1[1]), np.allclose(a0[2],a1[2]), np.allclose(a0[3],a1[3]))
 b0, b1 = pack(ctx, False), pack(perturb(ctx), False)
 print("B ridge/elo/features changed (expected True):", not np.allclose(b0[0],b1[0]), not np.allclose(b0[1],b1[1]), not np.allclose(b0[2],b1[2]))
+assert np.allclose(a0[0],a1[0]) and np.allclose(a0[1],a1[1]) and np.allclose(a0[2],a1[2]) and np.allclose(a0[3],a1[3]), "version A inputs moved: look-ahead"
+assert (not np.allclose(b0[0],b1[0])) and (not np.allclose(b0[1],b1[1])) and (not np.allclose(b0[2],b1[2])), "version B inputs did not move: the test is not sensitive"
+print("test_blind passed")
